@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="青ブタ">
+<meta name="theme-color" content="#08090c">
+<title>L青春ブタ野郎 設定判別</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{background:#08090c;color:#e3e6ea;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+button{touch-action:manipulation;font-family:inherit;cursor:pointer;border:none;outline:none;color:inherit}
+input{font-family:inherit}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+#W{max-width:540px;margin:0 auto;display:flex;flex-direction:column;height:100vh;height:100dvh}
+#top{flex-shrink:0;background:rgba(12,13,18,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(236,64,122,.22);padding-top:env(safe-area-inset-top,0px)}
+#ct{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#tabs{display:flex;background:rgba(11,12,16,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+.tb{flex:1;padding:8px 0 6px;text-align:center;font-size:9px;font-weight:600;color:rgba(255,255,255,.32)}
+.tb.a{color:#f06292}.tb-ic{font-size:19px;display:block;margin-bottom:2px}
+
+.hr{display:flex;align-items:center;justify-content:space-between;padding:9px 14px 6px;gap:8px}
+.ht{font-size:14px;font-weight:900;letter-spacing:.03em;background:linear-gradient(135deg,#ffffff,#f06292 60%,#ad1457);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hs{font-size:10px;color:rgba(255,255,255,.38);margin-top:1px}
+.hb{padding:5px 11px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(236,64,122,.08);border:1px solid rgba(236,64,122,.28);color:#f8bbd0;white-space:nowrap}
+.hb.p{background:rgba(236,64,122,.24);border-color:rgba(236,64,122,.6);color:#fff}
+
+.est{padding:2px 14px 10px}
+.est-top{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+.est-lb{font-size:10px;color:rgba(255,255,255,.35);font-weight:600}
+.est-main{font-size:20px;font-weight:900}
+.est-conf{font-size:11px;color:rgba(255,255,255,.4);margin-left:auto}
+.bars{display:flex;flex-direction:column;gap:3px}
+.bar-row{display:flex;align-items:center;gap:7px}
+.bar-s{width:28px;font-size:12px;font-weight:800;text-align:center;border-radius:5px;padding:1px 0}
+.bar-track{flex:1;height:14px;background:rgba(255,255,255,.05);border-radius:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:7px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.bar-pct{width:42px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.oe{display:flex;gap:6px;margin-top:7px}
+.oe-c{flex:1;padding:5px 8px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);text-align:center;font-size:10px;color:rgba(255,255,255,.4)}
+.oe-c b{display:block;font-size:14px;font-weight:800;margin-top:1px}
+.est-note{font-size:9px;color:rgba(255,255,255,.32);margin-top:6px;line-height:1.45}
+.est-note b{color:rgba(255,255,255,.5)}
+.warnbox{margin-top:7px;padding:7px 10px;border-radius:9px;background:rgba(255,167,38,.08);border:1px solid rgba(255,167,38,.25);font-size:10px;color:#ffcc80;line-height:1.5}
+.s1box{margin-top:7px;padding:8px 10px;border-radius:10px;font-size:11px;line-height:1.5;font-weight:700}
+.s1box.on{background:rgba(120,144,156,.16);border:1px solid rgba(120,144,156,.5);color:#cfd8dc}
+.s1box.off{background:rgba(236,64,122,.08);border:1px solid rgba(236,64,122,.22);color:#f8bbd0}
+.s1box.un{background:rgba(255,167,38,.08);border:1px solid rgba(255,167,38,.25);color:#ffcc80}
+.qs{display:flex;gap:5px;flex-wrap:wrap;padding:7px 14px;background:rgba(8,9,13,.6);border-top:1px solid rgba(255,255,255,.04);font-size:10px}
+.qc{background:rgba(255,255,255,.04);border-radius:7px;padding:3px 8px;border:1px solid rgba(255,255,255,.05)}
+.ql{color:rgba(255,255,255,.32);margin-right:3px}.qv{color:#f48fb1;font-weight:700}
+
+.pad{padding:11px 12px 24px}
+.rowg{display:flex;gap:8px;align-items:center;margin-bottom:9px;flex-wrap:wrap}
+.rowg label{font-size:11px;color:rgba(255,255,255,.42);font-weight:600;white-space:nowrap}
+.gin{width:100px;height:42px;background:rgba(255,255,255,.05);border:1px solid rgba(236,64,122,.22);border-radius:11px;color:#f48fb1;font-size:18px;font-weight:800;text-align:center;outline:none;font-family:ui-monospace,monospace}
+.gin:focus{border-color:rgba(244,143,177,.6);background:rgba(255,255,255,.08)}
+.gtot{font-size:10px;color:rgba(255,255,255,.3);line-height:1.4}
+.sec{margin-bottom:10px;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);overflow:hidden}
+.sec-h{padding:10px 12px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:space-between;user-select:none;gap:8px}
+.sec-h .t{font-size:13px;font-weight:800;color:rgba(248,187,208,.9)}
+.sec-h .ar{font-size:10px;color:rgba(255,255,255,.25)}
+.sec-b{padding:6px 11px 11px}
+.ci{padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.03);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.ci:last-child{border-bottom:none}
+.ci-l{flex:1;min-width:0}
+.ci-n{font-size:12px;font-weight:700;color:rgba(255,255,255,.82)}
+.ci-h{font-size:9px;color:#FFA726;background:rgba(255,167,38,.12);border-radius:4px;padding:1px 6px;display:inline-block;margin-left:4px;font-weight:800}
+.ci-h.hi{color:#AB47BC;background:rgba(171,71,188,.14)}
+.ci-h.od{color:#66BB6A;background:rgba(102,187,106,.14)}
+.ci-h.off{color:rgba(255,255,255,.45);background:rgba(255,255,255,.08)}
+.pair{padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.03)}
+.pair:last-child{border-bottom:none}
+.pair-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pair-v{font-family:ui-monospace,monospace;font-size:20px;font-weight:800;color:#f48fb1;white-space:nowrap;text-align:right}
+.pair-v span{opacity:.45;margin:0 1px}
+.pair-v small{display:block;font-size:10px;font-weight:700;color:rgba(255,255,255,.4);margin-top:-3px}
+.pair-v.bad{color:#ff8a80}
+.pair-row{display:flex;gap:8px;margin-top:6px}
+.pair-c{flex:1;display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:4px 5px}
+.pair-l{flex:1;font-size:9px;color:rgba(255,255,255,.4);font-weight:700;line-height:1.15}
+.ci-s{font-size:9px;color:rgba(255,255,255,.34);margin-top:2px;line-height:1.4}
+.ci-s b{color:#f48fb1}
+.cw{display:flex;align-items:center;gap:5px}
+.cm,.cp{width:38px;height:38px;border-radius:10px;font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.cm{background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.15);color:#ff8a80}
+.cp{background:rgba(236,64,122,.1);border:1px solid rgba(236,64,122,.22);color:#f48fb1}
+.cm:active,.cp:active{transform:scale(.85)}
+.vl{min-width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#eef2f6;font-family:ui-monospace,monospace}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{padding:9px 11px;border-radius:9px;font-size:12px;font-weight:700;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.62);text-align:left}
+.chip.s{border-color:#f06292;color:#f06292;background:rgba(240,98,146,.1)}
+.chip small{display:block;font-size:8px;opacity:.65;font-weight:600;margin-top:1px}
+.chip:active{transform:scale(.95)}
+.btn{padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.btn.pri{background:linear-gradient(135deg,#ec407a,#880e4f);color:#fff;border-color:transparent}
+.btn.dng{background:rgba(255,100,100,.08);border-color:rgba(255,100,100,.22);color:#ff8a80}
+.btn:active{transform:scale(.96)}
+.tgl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 10px;padding:9px 11px;border-radius:11px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06)}
+.tgl-t{font-size:11px;font-weight:700;color:rgba(255,255,255,.7)}
+.tgl-s{font-size:9px;color:rgba(255,255,255,.32);margin-top:2px;line-height:1.4}
+.sw{width:52px;height:30px;border-radius:15px;flex-shrink:0;background:rgba(255,255,255,.09);position:relative;transition:background .2s}
+.sw.on{background:rgba(236,64,122,.45)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:12px;background:#ccc;transition:transform .2s}
+.sw.on::after{transform:translateX(22px);background:#f48fb1}
+.itbl{width:100%;border-collapse:collapse;font-size:11px}
+.itbl th{background:rgba(236,64,122,.07);color:rgba(248,187,208,.75);padding:5px 6px;font-weight:700;text-align:left;white-space:nowrap}
+.itbl td{padding:5px 6px;border-top:1px solid rgba(255,255,255,.04);vertical-align:top;color:rgba(255,255,255,.62)}
+.itbl td.v{text-align:right;white-space:nowrap;font-family:ui-monospace,monospace;color:#80cbc4;font-weight:700}
+.itbl td.unk{color:rgba(255,167,38,.7);text-align:right;font-size:10px}
+.note{font-size:10px;color:rgba(255,255,255,.34);line-height:1.6;margin-top:6px}
+.note b{color:rgba(255,255,255,.55)}
+.mt{text-align:center;color:rgba(255,255,255,.18);padding:34px;font-size:13px;line-height:1.6}
+.ta{width:100%;min-height:300px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;color:#f8bbd0;font-size:11px;font-family:ui-monospace,monospace;white-space:pre-wrap;resize:vertical;outline:none}
+</style>
+</head>
+<body>
+<div id="W">
+  <div id="top"><div id="hdr"></div><div class="est" id="est"></div><div class="qs" id="qs"></div></div>
+  <div id="ct"></div>
+  <div id="tabs"></div>
+</div>
+<script>
+/* ============================================================================
+   L青春ブタ野郎はバニーガール先輩の夢を見ない（オリンピア／スマスロ・2026-09-07導入）
+   設定判別＆実戦メモ
+   ----------------------------------------------------------------------------
+   ★この機種の最大の特徴: **設定1の解析値がどのサイトにも無い**（2026-10 時点で「調査中」）。
+     代わりに **下パネル消灯＝設定1** という目視で確定できる仕掛けがある。
+     → 本ツールは「設定1は下パネルで決める／点灯なら 2〜6 で推定する」という形にしている。
+        設定1に適当な数字を代入して6段階で推定すると**嘘をつく**ので、そうしない。
+   ★数値は解析サイトの公開値のみ。**出典のない数字は入れない**。
+     設定差が公開されていない項目（小役確率そのもの等）は「解説」タブに「不明」と明記する。
+   ============================================================================ */
+var SETS=[2,3,4,5,6];                 // ★推定の対象。設定1は下パネルで別途決める
+var ALLSET=[1,2,3,4,5,6];
+var SC={1:"#78909C",2:"#42A5F5",3:"#66BB6A",4:"#FFA726",5:"#EF5350",6:"#AB47BC"};
+
+/* ---- 解析値（出典: ななプレス nana-press.com/kaiseki/machine/1214/ 系・p-world・p-town） ---- */
+var WARI={1:null,2:98.1,3:99.3,4:105.3,5:108.4,6:110.3};        // 設定1は調査中
+var ATX ={2:350.8,3:336.5,4:295.1,5:274.6,6:207.8};             // 青春ボーナス初当たり 1/x
+var AOX ={2:63.7,3:62.4,4:59.4,5:58.6,6:57.2};                  // アオハルチャンス出現率 1/x
+var CHERRY={2:.301,3:.309,4:.363,5:.375,6:.402};                // チェリー→アオハル当選率
+var CHANCE={2:.500,3:.535,4:.578,5:.590,6:.602};                // チャンス目→アオハル当選率
+var SQ_BELL  ={2:1988.9,3:1949.1,4:1860.7,5:1827.7,6:1817.7};   // 咲太クエスト（ベル契機）1/x
+var SQ_CHERRY={2:4610.7,3:4605.9,4:4516.7,5:4479.2,6:4351.3};
+var SQ_CHANCE={2:32157.6,3:31072.7,4:20459.1,5:20776.7,6:20555.8};
+var SQ_SUIKA ={2:15273.7,3:6633.5,4:6726.0,5:6558.4,6:6204.1};  // ⚠️設定2だけ極端。非単調
+var PTMAX={2:12387.9,3:12163.0,4:12210.3,5:11518.1,6:8348.9};   // 咲太ポイントMAX発動率 1/x
+var PT400={2:.010,3:.010,4:.012,5:.013,6:.028};                 // 400pt の前兆移行率
+
+/* ---- 示唆の重み ----
+   ⚠️ **出現率の設定別数値が公開されていない**ので、奇数/偶数/高設定の重みは
+      「方向は解析どおり・大きさは仮置き」。だから既定で ON にはするが、
+      いつでも切れるトグル（USE_SOFT）を置き、画面にも仮置きだと書く。
+      確定系（◯以上）は解析そのものなのでトグルの影響を受けない。 */
+var SOFT={
+ odd :{2:.70,3:1.55,4:.70,5:1.55,6:.70},
+ even:{2:1.55,3:.70,4:1.55,5:.70,6:1.55},
+ hiW :{2:.85,3:.95,4:1.15,5:1.25,6:1.35},
+ hiS :{2:.60,3:.80,4:1.30,5:1.55,6:1.80},
+ def :{2:1.25,3:1.15,4:.95,5:.85,6:.80}
+};
+
+/* ST「青ブタジャッジ」終了画面（スタンプ）。m=ハード制約 / soft=重み */
+var ENDSCR=[
+ {k:"e_sakuta",l:"咲太",       s:"デフォルト", soft:"def"},
+ {k:"e_nodoka",l:"のどか",     s:"奇数示唆",   soft:"odd"},
+ {k:"e_tomoe", l:"朋絵",       s:"偶数示唆",   soft:"even"},
+ {k:"e_rio",   l:"理央",       s:"高設定示唆(弱)", soft:"hiW"},
+ {k:"e_mai",   l:"麻衣",       s:"高設定示唆(強)", soft:"hiS"},
+ {k:"e_kaede", l:"かえで「吉」", h:"設定3以上", m:[3,4,5,6]},
+ {k:"e_shoko", l:"翔子「良」",  h:"設定4以上", m:[4,5,6]},
+ {k:"e_bunny", l:"バニー麻衣「優」",h:"設定5以上", m:[5,6]},
+ {k:"e_all",   l:"全員集合「極」",h:"設定6",   m:[6]}
+];
+/* ボーナス中の獲得枚数表示 */
+var MAIS=[
+ {k:"m456",l:"456枚OVER",h:"設定4以上",m:[4,5,6]},
+ {k:"m555",l:"555枚OVER",h:"設定5以上",m:[5,6]},
+ {k:"m821",l:"821枚OVER",h:"設定5以上",m:[5,6]},
+ {k:"m666",l:"666枚OVER",h:"設定6",    m:[6]}
+];
+/* その他の示唆 */
+var ETC=[
+ {k:"harupush",l:"ハルルナPUSH（ヒロインチャレンジ中）",h:"設定4以上",m:[4,5,6]}
+];
+var SIG=ENDSCR.concat(MAIS,ETC);
+var SIGM={};SIG.forEach(function(x){SIGM[x.k]=x});
+
+/* カウンタの定義（分母の型つき） */
+var CNTS=[
+ {id:"base",l:"通常時（分母＝総ゲーム数）",items:[
+  {k:"at",  n:"青春ボーナス初当たり",  d:"G", r:ATX,  u:"1/x", s:"★最重要。設定6だけ 1/207.8 と突出"},
+  {k:"ao",  n:"アオハルチャンス",      d:"G", r:AOX,  u:"1/x", s:"差は小さい（1/63.7〜1/57.2）＝数千G必要"},
+  {k:"ptmax",n:"咲太ポイントMAX発動",  d:"G", r:PTMAX,u:"1/x", s:"設定6だけ 1/8348.9 と突出。出たら強い"}
+ ]},
+ /* ★ 子役は「分母（成立回数）／当選回数」の1行で数える＝画面には 4/13 の形で出る。
+    分けて2行にすると、押し間違い（当選だけ押して分母を押し忘れる）が起きて率が壊れる。 */
+ {id:"rare",l:"レア役（成立回数／アオハル当選）",items:[
+  {k:"cherryT",n:"チェリー", hit:{k:"cherryH",n:"アオハル当選",r:CHERRY,u:"%"}, s:"当選率 30.1%→40.2%"},
+  {k:"chanceT",n:"チャンス目", hit:{k:"chanceH",n:"アオハル当選",r:CHANCE,u:"%"}, s:"当選率 50.0%→60.2%"},
+  {k:"suikaT", n:"スイカ", hit:{k:"suikaH",n:"アオハル当選"}, s:"⚠️全設定0.4%＝設定差なし（記録のみ）"}
+ ]},
+ {id:"quest",l:"咲太クエスト（分母＝総ゲーム数）",items:[
+  {k:"sqBell",  n:"ベル契機",    d:"G", r:SQ_BELL,  u:"1/x", s:"1/1988.9→1/1817.7（微差）"},
+  {k:"sqCherry",n:"チェリー契機",d:"G", r:SQ_CHERRY,u:"1/x", s:"微差"},
+  {k:"sqChance",n:"チャンス目契機",d:"G",r:SQ_CHANCE,u:"1/x",s:"設定4以上で約1.5倍"},
+  {k:"sqSuika", n:"スイカ契機",  d:"G", r:SQ_SUIKA, u:"1/x", s:"⚠️設定2だけ 1/15273 と極端。非単調なので弱めに扱う"}
+ ]},
+ {id:"pt",l:"思春期ポイント 400pt（到達／前兆移行）",items:[
+  {k:"pt400T",n:"400pt 到達", hit:{k:"pt400H",n:"前兆に移行",r:PT400,u:"%"}, s:"1.0%→設定6だけ2.8%"}
+ ]}
+];
+var ALLCK=[];CNTS.forEach(function(s){s.items.forEach(function(i){
+ ALLCK.push(i.k);if(i.hit)ALLCK.push(i.hit.k)})});
+SIG.forEach(function(s){ALLCK.push(s.k)});
+var CNTMAP={};CNTS.forEach(function(s){CNTMAP[s.id]=s});
+
+/* ------------------------------------------------------------------ 状態 */
+var SK="aobuta_v1";
+var G=0, CC={}, TRACK={}, TAB="rec", OPEN={}, USE_SOFT=true, PANEL="un", MEMO="", rstP=false, rstT=null;
+/* ★ TRACK[k]=true は「その項目を**数えている**」の意味。
+   ⚠️ これが無いと、数えていない項目が全部「0回」として尤度に入り、
+      0回は常に**いちばん確率の低い設定**を支持するので、推定が低設定へ系統的に偏る。
+      実測: 3000G・ボーナス15回（1/200＝設定6相当）なのに「設定2 65.5%」と出た（2026-10-11 の実機テスト）。
+      → 既定で数えるのは「青春ボーナス初当たり」だけ。他は＋を押した時点で自動的に計測中になる。 */
+/* PANEL: "un"=未確認 / "off"=消灯（設定1） / "on"=点灯（設定1否定） */
+
+function initC(){ALLCK.forEach(function(k){CC[k]=0});
+ TRACK={};TRACK.at=true;}   /* 初当たり回数は必ず分かるので既定で計測中 */
+function load(){initC();
+ try{var c=localStorage.getItem(SK+"c");if(c)Object.assign(CC,JSON.parse(c));
+  G=parseInt(localStorage.getItem(SK+"g"))||0;
+  PANEL=localStorage.getItem(SK+"p")||"un";
+  MEMO=localStorage.getItem(SK+"m")||"";
+  var s=localStorage.getItem(SK+"s");if(s!==null)USE_SOFT=(s==="1");
+  var t=localStorage.getItem(SK+"t");if(t)Object.assign(TRACK,JSON.parse(t));
+ }catch(e){}}
+function save(){try{localStorage.setItem(SK+"c",JSON.stringify(CC));
+ localStorage.setItem(SK+"g",String(G));localStorage.setItem(SK+"p",PANEL);
+ localStorage.setItem(SK+"m",MEMO);localStorage.setItem(SK+"s",USE_SOFT?"1":"0");
+ localStorage.setItem(SK+"t",JSON.stringify(TRACK))}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+ .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function itemOf(k){for(var i=0;i<CNTS.length;i++)for(var j=0;j<CNTS[i].items.length;j++){
+ var it=CNTS[i].items[j];if(it.k===k)return it;if(it.hit&&it.hit.k===k)return it.hit}return null}
+function denom(it){return it.d==="G"?G:(it.d?(CC[it.d]||0):0)}
+
+/* ------------------------------------------------------------- 推定エンジン */
+function estimate(){
+ var ll={},i,s,mask={},reasons=[],confs=[],warn=[],used=0;
+ for(i=0;i<SETS.length;i++){ll[SETS[i]]=0;mask[SETS[i]]=true}
+ function bino(n,d,rates,label,unit,weight){
+  if(!d||!rates)return;
+  if(n>d){return}   /* 分母超過の文言はペアの整合性チェックで1本に出す（重複させない） */
+  used++;var w=(weight===undefined?1:weight);
+  for(i=0;i<SETS.length;i++){s=SETS[i];
+   var p=(unit==="1/x")?(1/rates[s]):rates[s];
+   p=Math.min(.999,Math.max(.00002,p));
+   ll[s]+=w*(n*Math.log(p)+(d-n)*Math.log(1-p));}
+  reasons.push(label+" "+n+"/"+d+(unit==="1/x"?(n?" (1/"+Math.round(d/n)+")":""):(" ("+(n/d*100).toFixed(1)+"%)")));
+ }
+ CNTS.forEach(function(sec){sec.items.forEach(function(it){
+  // ★ ペア（分母＋当選）は「当選/分母」の二項で見る。分母は尤度に使わない
+  if(it.hit){
+   if(!it.hit.r)return;                  // 設定差が公開されていない組（スイカ等）は記録のみ
+   if(!TRACK[it.k])return;
+   var dd=CC[it.k]||0, hh=CC[it.hit.k]||0;
+   if(!dd)return;
+   bino(hh,dd,it.hit.r,it.n+"→"+it.hit.n,it.hit.u,1);
+   return;}
+  if(!it.r)return;                       // 分母カウンタ等は尤度に使わない
+  // ★ **数えていない項目は使わない**。0回を証拠にすると低設定へ系統的に偏る（上の TRACK の注を参照）
+  if(!TRACK[it.k])return;
+  var n=CC[it.k]||0,d=denom(it);
+  if(!d)return;
+  if(it.k==="at"&&G<1000&&n===0)return;   // 序盤の「まだ当たっていない」は情報にならない
+  // ⚠️ スイカ契機の咲太クエストは設定2だけ極端で非単調＝過信しないよう半分の重み
+  bino(n,d,it.r,it.n,it.u,(it.k==="sqSuika")?0.5:1);
+ })});
+ // 示唆
+ SIG.forEach(function(x){var n=CC[x.k];if(!n)return;
+  if(x.m){var mm={};x.m.forEach(function(v){mm[v]=1});
+   for(i=0;i<SETS.length;i++)if(!mm[SETS[i]])mask[SETS[i]]=false;
+   confs.push(x.l+"→"+x.h);used++;}
+  else if(x.soft&&USE_SOFT){used++;
+   for(i=0;i<SETS.length;i++){s=SETS[i];ll[s]+=n*Math.log(SOFT[x.soft][s])}}
+ });
+ var any=false;for(i=0;i<SETS.length;i++)if(mask[SETS[i]])any=true;
+ if(!any){for(i=0;i<SETS.length;i++)mask[SETS[i]]=true;
+  warn.push("確定要素どうしが矛盾しています（入力ミスの可能性）。制約を解除して表示しています")}
+ var mx=-Infinity;for(i=0;i<SETS.length;i++)if(mask[SETS[i]]&&ll[SETS[i]]>mx)mx=ll[SETS[i]];
+ var ex={},z=0;for(i=0;i<SETS.length;i++){s=SETS[i];var v=mask[s]?Math.exp(ll[s]-mx):0;ex[s]=v;z+=v}
+ var post={};for(i=0;i<SETS.length;i++){s=SETS[i];post[s]=z?ex[s]/z:0}
+ var best=SETS[0],bp=-1,esum=0,odd=0,even=0,hi=0;
+ for(i=0;i<SETS.length;i++){s=SETS[i];if(post[s]>bp){bp=post[s];best=s}
+  esum+=s*post[s];if(s%2)odd+=post[s];else even+=post[s];if(s>=4)hi+=post[s]}
+ // 入力の整合性
+ CNTS.forEach(function(sec){sec.items.forEach(function(it){if(!it.hit)return;
+  if((CC[it.hit.k]||0)>(CC[it.k]||0))
+   warn.push(it.n+"の"+it.hit.n+" "+(CC[it.hit.k]||0)+"回 > 成立 "+(CC[it.k]||0)+"回")})});
+ var sN=0;SIG.forEach(function(x){if(x.soft)sN+=CC[x.k]||0});
+ if(sN&&USE_SOFT)reasons.push("示唆演出 "+sN+"回（重みは仮置き）");
+ return {post:post,best:best,bestP:bp,exp:esum,odd:odd,even:even,hi:hi,
+         used:used,reasons:reasons,confs:confs,warn:warn,mask:mask};
+}
+
+/* ------------------------------------------------------------------ 描画 */
+function render(){rHdr();rEst();rQS();rTabs();
+ ({rec:rRec,sig:rSig,info:rInfo,exp:rExp}[TAB]||rRec)();}
+
+function rHdr(){
+ document.getElementById("hdr").innerHTML=
+  '<div class="hr"><div><div class="ht">L青春ブタ野郎はバニーガール先輩の夢を見ない</div>'
+  +'<div class="hs">設定判別＆実戦メモ ・ '+G.toLocaleString()+'G</div></div>'
+  +'<button class="hb'+(rstP?" p":"")+'" onclick="doRst()">'+(rstP?"もう一度で消去":"リセット")+'</button></div>';
+}
+
+function rEst(){
+ var E=estimate(),h='';
+ // 設定1は下パネルで決める（推定には混ぜない）
+ if(PANEL==="off"){
+  h+='<div class="s1box on">🔻 下パネル<b>消灯</b> ＝ <b>設定1</b>。ここで打つ理由はありません。</div>';
+  h+='<div class="est-note">※ この機種は<b>設定1の解析値がどのサイトにも出ていない</b>（調査中）ため、'
+   +'設定1かどうかは<b>下パネルの点灯/消灯でしか分かりません</b>。数値推定は 2〜6 で行います。</div>';
+  document.getElementById("est").innerHTML=h;return;
+ }
+ if(!E.used){
+  h+='<div class="est-note" style="font-size:11px;line-height:1.6">'
+   +'<b>まだ推定できません。</b>総ゲーム数と、青春ボーナス初当たり回数を入れてください。'
+   +'終了画面スタンプを1つ記録するだけでも大きく動きます。</div>';
+ }else{
+  h+='<div class="est-top"><span class="est-lb">推定</span>'
+   +'<span class="est-main" style="color:'+SC[E.best]+'">設定'+E.best+'</span>'
+   +'<span class="est-conf">確度 '+(E.bestP*100).toFixed(0)+'% ／ 期待値 '+E.exp.toFixed(2)+'</span></div>';
+  h+='<div class="bars">';
+  SETS.forEach(function(s){var p=E.post[s]*100;
+   h+='<div class="bar-row"><div class="bar-s" style="color:'+SC[s]+';background:'+SC[s]+'22">'+s+'</div>'
+    +'<div class="bar-track"><div class="bar-fill" style="width:'+p.toFixed(1)+'%;background:'+SC[s]+'"></div></div>'
+    +'<div class="bar-pct" style="color:'+(p>=20?SC[s]:"rgba(255,255,255,.45)")+'">'+p.toFixed(1)+'%</div></div>';});
+  h+='</div>';
+  h+='<div class="oe"><div class="oe-c">高設定(4〜6)<b style="color:#FFA726">'+(E.hi*100).toFixed(0)+'%</b></div>'
+   +'<div class="oe-c">奇数(3・5)<b>'+(E.odd*100).toFixed(0)+'%</b></div>'
+   +'<div class="oe-c">偶数(2・4・6)<b>'+(E.even*100).toFixed(0)+'%</b></div></div>';
+  if(E.confs.length)h+='<div class="est-note">確定要素: <b>'+esc(E.confs.join(" / "))+'</b></div>';
+  if(E.reasons.length)h+='<div class="est-note">根拠: '+esc(E.reasons.join(" ／ "))+'</div>';
+ }
+ if(PANEL==="un")h+='<div class="s1box un">⚠️ <b>下パネルを確認してください</b>。'
+  +'消灯なら<b>設定1</b>（解析値が無いので数値では当てられません）。点灯ならこの推定（2〜6）が有効です。'
+  +'<div style="margin-top:5px"><button class="btn" onclick="setPanel(\'on\')">点灯だった</button> '
+  +'<button class="btn dng" onclick="setPanel(\'off\')">消灯だった</button></div></div>';
+ else h+='<div class="s1box off">✅ 下パネル<b>点灯</b>＝設定1ではない。2〜6 で推定中。'
+  +'<button class="btn" style="margin-left:6px;padding:4px 9px" onclick="setPanel(\'un\')">取消</button></div>';
+ if(E.warn.length)h+='<div class="warnbox">⚠️ '+E.warn.map(esc).join("<br>⚠️ ")+'</div>';
+ document.getElementById("est").innerHTML=h;
+}
+function setPanel(v){PANEL=v;save();render()}
+
+function rQS(){
+ var h='';
+ h+='<span class="qc"><span class="ql">G</span><span class="qv">'+G.toLocaleString()+'</span></span>';
+ [["at","ボナ"],["ao","アオハル"],["ptmax","ptMAX"]].forEach(function(p){
+  var n=CC[p[0]]||0;if(!n)return;
+  h+='<span class="qc"><span class="ql">'+p[1]+'</span><span class="qv">'+n+'回'
+   +(G?" 1/"+Math.round(G/n):"")+'</span></span>';});
+ CNTS.forEach(function(sec){sec.items.forEach(function(it){if(!it.hit)return;
+  var d=CC[it.k]||0;if(!d)return;var n=CC[it.hit.k]||0;
+  h+='<span class="qc"><span class="ql">'+esc(it.n)+'</span><span class="qv">'+n+'/'+d
+   +' '+(n/d*100).toFixed(0)+'%</span></span>';})});
+ var sn=0;SIG.forEach(function(x){sn+=CC[x.k]||0});
+ if(sn)h+='<span class="qc"><span class="ql">示唆</span><span class="qv">'+sn+'件</span></span>';
+ document.getElementById("qs").innerHTML=h;
+}
+
+function rTabs(){
+ var ts=[{id:"rec",ic:"🎯",l:"記録"},{id:"sig",ic:"💬",l:"示唆"},
+         {id:"info",ic:"📖",l:"解説"},{id:"exp",ic:"📤",l:"出力"}];
+ document.getElementById("tabs").innerHTML=ts.map(function(t){
+  return '<button class="tb'+(TAB===t.id?" a":"")+'" onclick="go(\''+t.id+'\')">'
+   +'<span class="tb-ic">'+t.ic+'</span>'+t.l+'</button>'}).join("");
+}
+function go(t){TAB=t;render();document.getElementById("ct").scrollTop=0}
+
+/* ------------------------------------------------------------- 記録タブ */
+function rRec(){
+ var h='<div class="pad">';
+ h+='<div class="sec"><div class="sec-b"><div class="rowg">'
+  +'<label>総ゲーム数</label><input class="gin" type="number" inputmode="numeric" '
+  +'value="'+(G||"")+'" oninput="setG(this.value)" placeholder="0">'
+  +'<span class="gtot">分母。<b>必ず入れる</b><br>入れないと初当たり確率が出ません</span></div></div></div>';
+ CNTS.forEach(function(sec){
+  var open=OPEN[sec.id]!==false;
+  h+='<div class="sec"><div class="sec-h" onclick="tg(\''+sec.id+'\')">'
+   +'<span class="t">'+esc(sec.l)+'</span><span class="ar">'+(open?"▼":"▶")+'</span></div>';
+  if(open){h+='<div class="sec-b">';
+   sec.items.forEach(function(it){
+    // ---- ペア（分母／当選）: 1行に2組のカウンタを置き、4/13 の形で出す ----
+    if(it.hit){
+     var dd=CC[it.k]||0, hh=CC[it.hit.k]||0;
+     var pct=dd?((hh/dd*100).toFixed(1)+"%"):"—";
+     var tk2=it.hit.r?('<span class="ci-h'+(TRACK[it.k]?'':' off')+'" onclick="tgTrack(\''+it.k+'\')">'
+       +(TRACK[it.k]?'計測中':'未計測')+'</span>'):'<span class="ci-h off">記録のみ</span>';
+     h+='<div class="pair"><div class="pair-top"><div class="ci-n">'+esc(it.n)+tk2+'</div>'
+      +'<div class="pair-v'+((dd&&hh>dd)?' bad':'')+'">'+hh+'<span>/</span>'+dd
+      +'<small>'+pct+'</small></div></div>'
+      +'<div class="pair-row">'
+      +'<div class="pair-c"><div class="pair-l">成立<br>（分母）</div>'
+      +'<button class="cm" onclick="bump(\''+it.k+'\',-1)">−</button>'
+      +'<div class="vl">'+dd+'</div>'
+      +'<button class="cp" onclick="bump(\''+it.k+'\',1)">＋</button></div>'
+      +'<div class="pair-c"><div class="pair-l">'+esc(it.hit.n)+'</div>'
+      +'<button class="cm" onclick="bump(\''+it.hit.k+'\',-1)">−</button>'
+      +'<div class="vl">'+hh+'</div>'
+      +'<button class="cp" onclick="bumpHit(\''+it.k+'\',\''+it.hit.k+'\')">＋</button></div>'
+      +'</div><div class="ci-s">'+esc(it.s||"")+'</div></div>';
+     return;}
+    var n=CC[it.k]||0,d=denom(it),sub=esc(it.s||"");
+    if(it.r){var cur;
+     if(it.u==="1/x")cur=(d&&n)?("現在 <b>1/"+Math.round(d/n)+"</b>"):"";
+     else cur=d?("現在 <b>"+(n/d*100).toFixed(1)+"%</b>（"+n+"/"+d+"）"):"";
+     if(cur)sub=cur+" ／ "+sub;}
+    var tk=it.r?('<span class="ci-h'+(TRACK[it.k]?'':' off')+'" onclick="event.stopPropagation();tgTrack(\''+it.k+'\')">'
+      +(TRACK[it.k]?'計測中':'未計測')+'</span>'):'';
+    h+='<div class="ci"><div class="ci-l"><div class="ci-n">'+esc(it.n)+tk+'</div>'
+     +'<div class="ci-s">'+sub+'</div></div>'
+     +'<div class="cw"><button class="cm" onclick="bump(\''+it.k+'\',-1)">−</button>'
+     +'<div class="vl">'+n+'</div>'
+     +'<button class="cp" onclick="bump(\''+it.k+'\',1)">＋</button></div></div>';});
+   h+='</div>';}
+  h+='</div>';});
+ h+='<div class="sec"><div class="sec-b">'
+  +'<textarea class="ta" style="min-height:70px" oninput="setMemo(this.value)" '
+  +'placeholder="メモ（履歴・ヤメ時・ざわつき・差枚など）">'+esc(MEMO)+'</textarea></div></div>';
+ h+='</div>';
+ document.getElementById("ct").innerHTML=h;
+}
+function tg(k){OPEN[k]=(OPEN[k]===false);render()}
+function setG(v){G=parseInt(v)||0;save();rEst();rQS()}
+function setMemo(v){MEMO=v;save()}
+function bump(k,d){CC[k]=Math.max(0,(CC[k]||0)+d);
+ if(d>0)TRACK[k]=true;              /* 1回でも押したら「数えている」とみなす */
+ save();render()}
+function tgTrack(k){TRACK[k]=!TRACK[k];save();render()}
+/* ★ 当選の＋は**分母も同時に1つ増やす**。
+   実戦では「レア役が成立した→当選した」の順でしか起きないので、当選だけ押すと
+   必ず分母の押し忘れになり、当選率が過大に出る（4/13 の 13 が増えない）。
+   成立しただけの回は「成立（分母）」の＋だけを押す。 */
+function bumpHit(dk,hk){CC[hk]=(CC[hk]||0)+1;CC[dk]=(CC[dk]||0)+1;TRACK[dk]=true;save();render()}
+
+/* ------------------------------------------------------------- 示唆タブ */
+function rSig(){
+ var h='<div class="pad">';
+ h+='<div class="tgl"><div><div class="tgl-t">示唆演出の重みを使う</div>'
+  +'<div class="tgl-s">⚠️ 奇数/偶数/高設定の<b>出現率は未公開</b>です。向きは解析どおりですが'
+  +'大きさは<b>仮置き</b>。切ると確定系（◯以上）だけで推定します</div></div>'
+  +'<div class="sw'+(USE_SOFT?" on":"")+'" onclick="tgSoft()"></div></div>';
+ [["ST「青ブタジャッジ」終了画面スタンプ",ENDSCR],
+  ["ボーナス中の獲得枚数表示",MAIS],
+  ["その他",ETC]].forEach(function(p){
+  h+='<div class="sec"><div class="sec-h"><span class="t">'+esc(p[0])+'</span></div><div class="sec-b">';
+  p[1].forEach(function(x){
+   var cls=x.m?"ci-h":(x.soft==="odd"||x.soft==="even"?"ci-h od":"ci-h hi");
+   h+='<div class="ci"><div class="ci-l"><div class="ci-n">'+esc(x.l)
+    +'<span class="'+cls+'">'+esc(x.h||x.s)+'</span></div></div>'
+    +'<div class="cw"><button class="cm" onclick="bump(\''+x.k+'\',-1)">−</button>'
+    +'<div class="vl">'+(CC[x.k]||0)+'</div>'
+    +'<button class="cp" onclick="bump(\''+x.k+'\',1)">＋</button></div></div>';});
+  h+='</div></div>';});
+ h+='<div class="sec"><div class="sec-b"><div class="note" style="margin:0">'
+  +'⚠️ <b>載せていない示唆</b>: エンディング画面／トロフィー／ボイス単独の示唆は'
+  +'<b>解析が公開されていません</b>。「隠れ凪セリフ」も他機種からの流用で本機では未確認なので入れていません。'
+  +'<br>⚠️ 終了画面スタンプは<b>出現率の設定別数値が不明</b>なので、確定系以外は上のトグルで扱いを変えられます。'
+  +'</div></div></div>';
+ h+='</div>';
+ document.getElementById("ct").innerHTML=h;
+}
+function tgSoft(){USE_SOFT=!USE_SOFT;save();render()}
+
+/* ------------------------------------------------------------- 解説タブ */
+function tbl(title,rates,unit,note){
+ var h='<div class="sec"><div class="sec-h"><span class="t">'+esc(title)+'</span></div><div class="sec-b">';
+ h+='<table class="itbl"><tr><th>設定</th>'+ALLSET.map(function(s){
+   return '<th style="text-align:right;color:'+SC[s]+'">'+s+'</th>'}).join("")+'</tr><tr><td>値</td>';
+ ALLSET.forEach(function(s){
+  if(s===1&&!(1 in rates)){h+='<td class="unk">調査中</td>';return}
+  var v=rates[s];
+  if(v==null){h+='<td class="unk">調査中</td>';return}
+  h+='<td class="v">'+(unit==="1/x"?("1/"+v):(unit==="%"?(v*100).toFixed(1)+"%":v))+'</td>';});
+ h+='</tr></table>';
+ if(note)h+='<div class="note">'+note+'</div>';
+ h+='</div></div>';return h;
+}
+function rInfo(){
+ var h='<div class="pad">';
+ h+='<div class="sec"><div class="sec-h"><span class="t">⚠️ この機種の前提</span></div><div class="sec-b">'
+  +'<div class="note" style="margin:0">'
+  +'<b>設定1の解析値がどのサイトにも出ていません</b>（2026-10 時点で「調査中」）。'
+  +'代わりに<b>下パネル消灯＝設定1</b>という目視で分かる仕掛けがあります。'
+  +'<br>→ 本ツールは<b>設定1を推定に混ぜず</b>、下パネルで確定させる形にしています。'
+  +'設定1に適当な数字を入れて6段階で推定すると、設定1と2の見分けがついているように見えて'
+  +'<b>実際には何も分かっていない</b>ことになるためです。'
+  +'<br><br>導入 2026-09-07（オリンピア・スマスロ）／純増 約8.0枚/G／'
+  +'ST「青ブタジャッジ」1セット 2G×4ヒロイン＝8G＋α／コイン持ち 約31.5G（50枚）／'
+  +'天井 CZ間560G＋α・ボーナス間899G＋α（設定変更時/ST駆け抜け時 699G＋α）・pt天井1000pt。'
+  +'</div></div></div>';
+ h+=tbl("設定別機械割",WARI,"",'設定1は調査中。設定2〜3は低設定域（98.1〜99.3%）、設定4以上で105.3%〜。');
+ h+=tbl("青春ボーナス初当たり",ATX,"1/x",
+   '<b>★最重要</b>。設定6だけ 1/207.8 と突出しています（設定5の 1/274.6 から大きく飛ぶ）。'
+   +'逆に設定2〜3の差は小さいので、低設定域の見分けには向きません。');
+ h+=tbl("アオハルチャンス出現率",AOX,"1/x",
+   'レア役＋かえでスタンプMAX＋咲太クエスト成功の合算。差が小さい（1/63.7→1/57.2）ので'
+   +'<b>数千G回さないと効きません</b>。');
+ h+=tbl("チェリー→アオハル当選率",CHERRY,"%",'チェリーの回数を数える必要があります。');
+ h+=tbl("チャンス目→アオハル当選率",CHANCE,"%",'同上。チェリーより設定差の絶対値は小さめ。');
+ h+=tbl("咲太ポイントMAX発動率",PTMAX,"1/x",'設定6だけ 1/8348.9 と突出。');
+ h+=tbl("400pt の前兆移行率",PT400,"%",'設定6だけ 2.8%（他は1.0〜1.3%）。400pt を通過した回数を数えます。');
+ h+=tbl("咲太クエスト（ベル契機）",SQ_BELL,"1/x","微差。長時間回したときの補助。");
+ h+=tbl("咲太クエスト（チャンス目契機）",SQ_CHANCE,"1/x","設定4以上で約1.5倍。");
+ h+=tbl("咲太クエスト（スイカ契機）",SQ_SUIKA,"1/x",
+   '⚠️ <b>設定2だけ 1/15273.7 と極端</b>で、3以上は 1/6204〜1/6726 とほぼ横ばい。'
+   +'非単調なので本ツールでは<b>重みを半分</b>にしています。');
+ h+='<div class="sec"><div class="sec-h"><span class="t">❌ 載せていない＝判別に使えない項目</span></div><div class="sec-b">'
+  +'<div class="note" style="margin:0">'
+  +'・<b>小役確率そのものの設定差</b>（弱/強チェリー・スイカ・ベル・ブドウ・チャンス目）＝<b>どのサイトにも記載なし</b><br>'
+  +'・スイカ→アオハル当選率＝全設定 0.4%（<b>設定差なし</b>）<br>'
+  +'・CZ「エピソードチャンス」の突入率・成功率＝設定2（1/222.9）しか判明していない<br>'
+  +'・100/200/600/800pt の本前兆期待度＝設定差なし。300/500/700/900pt＝設定5・6が不明<br>'
+  +'・思春期症候群付与率＝設定2(20.4%)のみ判明、設定3以上は調査中<br>'
+  +'・エンディング画面／トロフィー／ボイス単独の示唆、エンディング到達率、上位AT当選率、通常ST継続率<br>'
+  +'・「隠れ凪セリフ」＝他機種からの流用で本機では未確認（<b>採用していません</b>）'
+  +'</div></div></div>';
+ h+='<div class="sec"><div class="sec-h"><span class="t">出典</span></div><div class="sec-b">'
+  +'<div class="note" style="margin:0">ななプレス（nana-press.com/kaiseki/machine/1214/ 系）/ '
+  +'P-WORLD 機種データベース / DMMぱちタウン / ちょんぼりすた / 1撃。'
+  +'2026-10-11 時点の公開値。<b>導入から約1か月の新台なので、後から数値が変わる可能性があります</b>'
+  +'（特に「調査中」の設定1）。</div></div></div>';
+ h+='</div>';
+ document.getElementById("ct").innerHTML=h;
+}
+
+/* ------------------------------------------------------------- 出力タブ */
+function buildText(){
+ var E=estimate(),L=[];
+ L.push("■ L青春ブタ野郎はバニーガール先輩の夢を見ない");
+ L.push("総ゲーム数: "+G);
+ L.push("下パネル: "+(PANEL==="off"?"消灯＝設定1":PANEL==="on"?"点灯＝設定1ではない":"未確認"));
+ L.push("");
+ L.push("[カウント]");
+ CNTS.forEach(function(sec){sec.items.forEach(function(it){
+  if(it.hit){var dd=CC[it.k]||0,hh=CC[it.hit.k]||0;if(!dd&&!hh)return;
+   L.push("  "+it.n+": "+hh+"/"+dd+(dd?(" = "+(hh/dd*100).toFixed(1)+"%"):"")+"（"+it.hit.n+"）");return}
+  var n=CC[it.k]||0;if(!n)return;var d=denom(it),r="";
+  if(it.r&&d)r=(it.u==="1/x")?(" = 1/"+Math.round(d/n)):(" = "+(n/d*100).toFixed(1)+"%");
+  L.push("  "+it.n+": "+n+(it.d?(" / 分母 "+d):"")+r);})});
+ var sl=[];SIG.forEach(function(x){var n=CC[x.k]||0;if(n)sl.push(x.l+"("+(x.h||x.s)+")×"+n)});
+ if(sl.length){L.push("");L.push("[示唆]");L.push("  "+sl.join(" / "))}
+ L.push("");
+ if(PANEL==="off")L.push("[推定] 設定1（下パネル消灯）");
+ else if(!E.used)L.push("[推定] まだ出せない");
+ else{
+  L.push("[推定] 設定"+E.best+"（確度 "+(E.bestP*100).toFixed(0)+"% / 期待値 "+E.exp.toFixed(2)+"）");
+  L.push("  "+SETS.map(function(s){return "設定"+s+" "+(E.post[s]*100).toFixed(1)+"%"}).join(" / "));
+  L.push("  高設定(4-6) "+(E.hi*100).toFixed(0)+"%");
+  if(E.confs.length)L.push("  確定要素: "+E.confs.join(" / "));
+  if(E.reasons.length)L.push("  根拠: "+E.reasons.join(" / "));
+  L.push("  ※設定1は推定に含めていません（解析値が未公開・下パネルで判断）");
+ }
+ if(MEMO){L.push("");L.push("[メモ]");L.push("  "+MEMO.replace(/\n/g,"\n  "))}
+ return L.join("\n");
+}
+function rExp(){
+ document.getElementById("ct").innerHTML='<div class="pad">'
+  +'<div class="sec"><div class="sec-h"><span class="t">コピー用</span></div><div class="sec-b">'
+  +'<textarea class="ta" readonly>'+esc(buildText())+'</textarea></div></div></div>';
+}
+
+/* ------------------------------------------------------------- リセット */
+function doRst(){
+ if(!rstP){rstP=true;if(rstT)clearTimeout(rstT);
+  rstT=setTimeout(function(){rstP=false;render()},3000);render();return}
+ rstP=false;if(rstT)clearTimeout(rstT);
+ initC();G=0;PANEL="un";MEMO="";save();render();
+}
+
+load();render();
+</script>
+</body>
+</html>
