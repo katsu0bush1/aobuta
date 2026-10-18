@@ -83,6 +83,10 @@ input[type=number]{-moz-appearance:textfield}
 .pair-row{display:flex;gap:8px;margin-top:6px}
 .pair-c{flex:1;display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:4px 5px}
 .pair-l{flex:1;font-size:9px;color:rgba(255,255,255,.4);font-weight:700;line-height:1.15}
+.lgg{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 9px;border-radius:12px;background:rgba(236,64,122,.07);border:1px solid rgba(236,64,122,.25)}
+.lgg label{font-size:11px;font-weight:800;color:#f8bbd0;white-space:nowrap}
+.gin.lg{flex:1;width:auto;height:48px;font-size:22px}
+.lgl{font-size:11px;font-weight:800;color:#f8bbd0;margin:2px 0 5px}
 .ci-s{font-size:9px;color:rgba(255,255,255,.34);margin-top:2px;line-height:1.4}
 .ci-s b{color:#f48fb1}
 .cw{display:flex;align-items:center;gap:5px}
@@ -151,7 +155,13 @@ var SQ_CHERRY={2:4610.7,3:4605.9,4:4516.7,5:4479.2,6:4351.3};
 var SQ_CHANCE={2:32157.6,3:31072.7,4:20459.1,5:20776.7,6:20555.8};
 var SQ_SUIKA ={2:15273.7,3:6633.5,4:6726.0,5:6558.4,6:6204.1};  // ⚠️設定2だけ極端。非単調
 var PTMAX={2:12387.9,3:12163.0,4:12210.3,5:11518.1,6:8348.9};   // 咲太ポイントMAX発動率 1/x
-var PT400={2:.010,3:.010,4:.012,5:.013,6:.028};                 // 400pt の前兆移行率
+var PT400={2:.010,3:.010,4:.012,5:.013,6:.028};                 /* 400pt の前兆移行率 */
+/* ★ 2026-10-19 追加（なな徹38855/38860・パチセブン）。300pt/500pt の本前兆（CZ以上）移行率。
+   ⚠️ **設定4以上は「40%以上」「33%以上」の下限表記**しか公開されていないので4〜6に同じ下限を入れる
+   （設定4/5/6の間では差がつかない＝実際より控えめ＝保守的）。
+   PT400 は設定2で1.0%＝到達100回に1回で実戦では効かないが、こちらは**到達のたびに観測できる**。 */
+var PT300={2:.30,3:.34,4:.40,5:.40,6:.40};
+var PT500={2:.25,3:.27,4:.33,5:.33,6:.33};                 // 400pt の前兆移行率
 
 /* ---- 示唆の重み ----
    ⚠️ **出現率の設定別数値が公開されていない**ので、奇数/偶数/高設定の重みは
@@ -192,6 +202,48 @@ var ETC=[
 var SIG=ENDSCR.concat(MAIS,ETC);
 var SIGM={};SIG.forEach(function(x){SIGM[x.k]=x});
 
+/* ===== 時系列ログのイベント種別 =====
+   cnt    … 追加時に+1するカウンタ
+   res    … 結果の選択肢。resCnt[結果] のカウンタも+1
+   opts   … 契機などの選択肢。各optが自分のカウンタを持つ
+   sigs   … 示唆の選択肢（ENDSCR/MAIS）。選ぶとその示唆カウンタが+1＝推定に直結する
+   free   … 自由入力のプレースホルダ
+   ⚠️ 削除したら +1 した分はすべて戻す（何を足したかを各エントリに残す）。 */
+var TYPES=[
+ /* ⚠️ 2026-10-19 是正: 「規定pt」はCZ（エピソードチャンス）の契機であってボーナス直撃ではない。
+    「レア役直撃」は6サイトに記載が無い（観測目は“エピソードチャンス直撃”）。
+    実在するのに無かった **ボーナス天井** と **観測目→ロングフリーズ** を追加。 */
+ {k:"at",   l:"青春ボーナス", ic:"🔥", cnt:"at",
+  res:["アオハル経由","エピソードチャンス","ボーナス天井(899G/699G)","観測目→フリーズ","不明"],
+  free:"メモ（任意）"},
+ /* ⚠️ 2026-10-19 是正: アオハルチャンスは**報酬獲得ゾーン**で、突入時点で必ず報酬が確定する
+    （青春チャージ66.4%／ドリコレ32.1%／エピソードチャンス1.3%／青春ボーナス0.1%）。
+    「非当選」は存在しない。レア役からの当選は別カウンタ（チェリー/チャンス目）で数える。 */
+ {k:"ao",   l:"アオハルチャンス", ic:"✨", cnt:"ao",
+  res:["青春チャージ","ドリームコレクション","エピソードチャンス","青春ボーナス"], free:"契機（任意）"},
+ {k:"cz",   l:"エピソードチャンス(CZ)", ic:"🎬", res:["成功","失敗"],
+  free:"ヒロイン・内容（設定差は未公開なので記録のみ）"},
+ {k:"quest",l:"咲太クエスト", ic:"📖",
+  opts:[{l:"ベル",c:"sqBell"},{l:"スイカ",c:"sqSuika"},{l:"チェリー",c:"sqCherry"},{l:"チャンス目",c:"sqChance"}],
+  /* ⚠️ 2026-10-19 是正: 「失敗」の記載がどのサイトにも無い（指定小役を引けば達成）。
+     未達成の扱いは未記載なので「未達成/不明」にする。 */
+  res:["達成","未達成/不明"], free:"メモ（任意）"},
+ {k:"ptmax",l:"咲太ポイントMAX", ic:"⭐", cnt:"ptmax", free:"メモ（任意）"},
+ {k:"pt300",l:"300pt 到達", ic:"📈", cnt:"pt300T", res:["本前兆(CZ以上)へ","移行せず"],
+  resCnt:{"本前兆(CZ以上)へ":"pt300H"}, free:"メモ（任意）"},
+ {k:"pt500",l:"500pt 到達", ic:"📈", cnt:"pt500T", res:["本前兆(CZ以上)へ","移行せず"],
+  resCnt:{"本前兆(CZ以上)へ":"pt500H"}, free:"メモ（任意）"},
+ {k:"pt400",l:"400pt 到達", ic:"📈", cnt:"pt400T", res:["前兆に移行","移行せず"],
+  resCnt:{"前兆に移行":"pt400H"}, free:"メモ（任意）"},
+ {k:"end",  l:"終了画面スタンプ", ic:"🖼", sigs:"end", free:"メモ（任意）"},
+ {k:"mai",  l:"獲得枚数表示", ic:"💰", sigs:"mai", free:"実際の枚数（任意）"},
+ {k:"push", l:"ハルルナPUSH", ic:"🔔", cnt:"harupush", free:"メモ（任意）"},
+ {k:"eye",  l:"アイキャッチ", ic:"👁", free:"色・種類（示唆は未公開＝記録のみ）"},
+ {k:"voice",l:"ボイス", ic:"🔊", free:"セリフ・キャラ（示唆は未公開＝記録のみ）"},
+ {k:"memo", l:"フリーメモ", ic:"📝", free:"自由に書く（ヤメ時・ざわつき・挙動など）"}
+];
+var TYPEM={};TYPES.forEach(function(t){TYPEM[t.k]=t});
+
 /* カウンタの定義（分母の型つき） */
 var CNTS=[
  {id:"base",l:"通常時（分母＝総ゲーム数）",items:[
@@ -202,9 +254,23 @@ var CNTS=[
  /* ★ 子役は「分母（成立回数）／当選回数」の1行で数える＝画面には 4/13 の形で出る。
     分けて2行にすると、押し間違い（当選だけ押して分母を押し忘れる）が起きて率が壊れる。 */
  {id:"rare",l:"レア役（成立回数／アオハル当選）",items:[
-  {k:"cherryT",n:"チェリー", hit:{k:"cherryH",n:"アオハル当選",r:CHERRY,u:"%"}, s:"当選率 30.1%→40.2%"},
-  {k:"chanceT",n:"チャンス目", hit:{k:"chanceH",n:"アオハル当選",r:CHANCE,u:"%"}, s:"当選率 50.0%→60.2%"},
-  {k:"suikaT", n:"スイカ", hit:{k:"suikaH",n:"アオハル当選"}, s:"⚠️全設定0.4%＝設定差なし（記録のみ）"}
+  /* ⚠️⚠️ 2026-10-19【致命】の是正（6サイト突合）:
+     CHERRY / CHANCE は**通常滞在時のみ**の値。内部状態が高確・リラックスだと全設定共通になる。
+        通常  : スイカ 0.4%（共通）/ チェリー 30.1%→40.2% / チャンス目 50.0%→60.2%
+        高確・リラックス: スイカ 30.1% / チェリー **30.1%（共通）** / チャンス目 **85.2%（共通）**
+     以前は内部状態を区別せず全部を同じカウンタに入れていたため、
+     高確中のチェリー(30.1%)は尤度を**低設定へ**、高確中のチャンス目(85.2%)は**設定6へ**押していた。
+     → カウンタを「通常滞在のみ」に限定し、高確・リラックス中は別カウンタ（判別に使わない）に分ける。 */
+  {k:"cherryT",n:"チェリー（通常滞在のみ）", hit:{k:"cherryH",n:"アオハル当選",r:CHERRY,u:"%"},
+   s:"★通常滞在時だけ数える。当選率 30.1%→40.2%"},
+  {k:"chanceT",n:"チャンス目（通常滞在のみ）", hit:{k:"chanceH",n:"アオハル当選",r:CHANCE,u:"%"},
+   s:"★通常滞在時だけ数える。当選率 50.0%→60.2%"},
+  {k:"suikaT", n:"スイカ（通常滞在のみ）", hit:{k:"suikaH",n:"アオハル当選"},
+   s:"⚠️通常滞在は全設定0.4%＝設定差なし（記録のみ）"},
+  {k:"hiCherryT",n:"チェリー（高確・リラックス中）", hit:{k:"hiCherryH",n:"アオハル当選"},
+   s:"⚠️全設定共通30.1%＝判別に使わない。通常滞在と混ぜないために分けて数える"},
+  {k:"hiChanceT",n:"チャンス目（高確・リラックス中）", hit:{k:"hiChanceH",n:"アオハル当選"},
+   s:"⚠️全設定共通85.2%＝判別に使わない。混ぜると設定6へ大きく偏る"}
  ]},
  {id:"quest",l:"咲太クエスト（分母＝総ゲーム数）",items:[
   {k:"sqBell",  n:"ベル契機",    d:"G", r:SQ_BELL,  u:"1/x", s:"1/1988.9→1/1817.7（微差）"},
@@ -213,7 +279,12 @@ var CNTS=[
   {k:"sqSuika", n:"スイカ契機",  d:"G", r:SQ_SUIKA, u:"1/x", s:"⚠️設定2だけ 1/15273 と極端。非単調なので弱めに扱う"}
  ]},
  {id:"pt",l:"思春期ポイント 400pt（到達／前兆移行）",items:[
-  {k:"pt400T",n:"400pt 到達", hit:{k:"pt400H",n:"前兆に移行",r:PT400,u:"%"}, s:"1.0%→設定6だけ2.8%"}
+  {k:"pt300T",n:"300pt 到達", hit:{k:"pt300H",n:"本前兆(CZ以上)へ",r:PT300,u:"%"},
+   s:"★設定2 30% / 設定3 34% / 設定4以上 40%以上。到達のたびに取れるので判別力が高い"},
+  {k:"pt500T",n:"500pt 到達", hit:{k:"pt500H",n:"本前兆(CZ以上)へ",r:PT500,u:"%"},
+   s:"★設定2 25% / 設定3 27% / 設定4以上 33%以上"},
+  {k:"pt400T",n:"400pt 到達", hit:{k:"pt400H",n:"前兆に移行",r:PT400,u:"%"},
+   s:"1.0%→設定6だけ2.8%。⚠️設定2で100回に1回＝実戦ではほぼ効かない"}
  ]}
 ];
 var ALLCK=[];CNTS.forEach(function(s){s.items.forEach(function(i){
@@ -223,7 +294,8 @@ var CNTMAP={};CNTS.forEach(function(s){CNTMAP[s.id]=s});
 
 /* ------------------------------------------------------------------ 状態 */
 var SK="aobuta_v1";
-var G=0, CC={}, TRACK={}, TAB="rec", OPEN={}, USE_SOFT=true, PANEL="un", MEMO="", rstP=false, rstT=null;
+var G=0, CC={}, TRACK={}, LOG=[], TAB="rec", OPEN={}, USE_SOFT=true, PANEL="un", MEMO="", rstP=false, rstT=null;
+var lgT="at", lgG="", lgV="", lgR=null, lgO=null, lgSg=null;
 /* ★ TRACK[k]=true は「その項目を**数えている**」の意味。
    ⚠️ これが無いと、数えていない項目が全部「0回」として尤度に入り、
       0回は常に**いちばん確率の低い設定**を支持するので、推定が低設定へ系統的に偏る。
@@ -231,7 +303,7 @@ var G=0, CC={}, TRACK={}, TAB="rec", OPEN={}, USE_SOFT=true, PANEL="un", MEMO=""
       → 既定で数えるのは「青春ボーナス初当たり」だけ。他は＋を押した時点で自動的に計測中になる。 */
 /* PANEL: "un"=未確認 / "off"=消灯（設定1） / "on"=点灯（設定1否定） */
 
-function initC(){ALLCK.forEach(function(k){CC[k]=0});
+function initC(){ALLCK.forEach(function(k){CC[k]=0});LOG=[];
  TRACK={};TRACK.at=true;}   /* 初当たり回数は必ず分かるので既定で計測中 */
 function load(){initC();
  try{var c=localStorage.getItem(SK+"c");if(c)Object.assign(CC,JSON.parse(c));
@@ -240,11 +312,13 @@ function load(){initC();
   MEMO=localStorage.getItem(SK+"m")||"";
   var s=localStorage.getItem(SK+"s");if(s!==null)USE_SOFT=(s==="1");
   var t=localStorage.getItem(SK+"t");if(t)Object.assign(TRACK,JSON.parse(t));
+  var g2=localStorage.getItem(SK+"log");if(g2)LOG=JSON.parse(g2)||[];
  }catch(e){}}
 function save(){try{localStorage.setItem(SK+"c",JSON.stringify(CC));
  localStorage.setItem(SK+"g",String(G));localStorage.setItem(SK+"p",PANEL);
  localStorage.setItem(SK+"m",MEMO);localStorage.setItem(SK+"s",USE_SOFT?"1":"0");
- localStorage.setItem(SK+"t",JSON.stringify(TRACK))}catch(e){}}
+ localStorage.setItem(SK+"t",JSON.stringify(TRACK));
+ localStorage.setItem(SK+"log",JSON.stringify(LOG))}catch(e){}}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
  .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
 function itemOf(k){for(var i=0;i<CNTS.length;i++)for(var j=0;j<CNTS[i].items.length;j++){
@@ -312,7 +386,7 @@ function estimate(){
 
 /* ------------------------------------------------------------------ 描画 */
 function render(){rHdr();rEst();rQS();rTabs();
- ({rec:rRec,sig:rSig,info:rInfo,exp:rExp}[TAB]||rRec)();}
+ ({rec:rRec,log:rLog,sig:rSig,info:rInfo,exp:rExp}[TAB]||rRec)();}
 
 function rHdr(){
  document.getElementById("hdr").innerHTML=
@@ -378,7 +452,7 @@ function rQS(){
 }
 
 function rTabs(){
- var ts=[{id:"rec",ic:"🎯",l:"記録"},{id:"sig",ic:"💬",l:"示唆"},
+ var ts=[{id:"rec",ic:"🎯",l:"記録"},{id:"log",ic:"🕒",l:"履歴"},{id:"sig",ic:"💬",l:"示唆"},
          {id:"info",ic:"📖",l:"解説"},{id:"exp",ic:"📤",l:"出力"}];
  document.getElementById("tabs").innerHTML=ts.map(function(t){
   return '<button class="tb'+(TAB===t.id?" a":"")+'" onclick="go(\''+t.id+'\')">'
@@ -472,6 +546,8 @@ function rSig(){
     +'<button class="cp" onclick="bump(\''+x.k+'\',1)">＋</button></div></div>';});
   h+='</div></div>';});
  h+='<div class="sec"><div class="sec-b"><div class="note" style="margin:0">'
+  +'ℹ️ ここの数字は<b>「履歴」タブから入れた分も含んだ合計</b>です。'
+  +'同じ出来事を両方から入れると<b>二重に数えます</b>（どちらか一方で入れてください）。<br>'
   +'⚠️ <b>載せていない示唆</b>: エンディング画面／トロフィー／ボイス単独の示唆は'
   +'<b>解析が公開されていません</b>。「隠れ凪セリフ」も他機種からの流用で本機では未確認なので入れていません。'
   +'<br>⚠️ 終了画面スタンプは<b>出現率の設定別数値が不明</b>なので、確定系以外は上のトグルで扱いを変えられます。'
@@ -480,6 +556,107 @@ function rSig(){
  document.getElementById("ct").innerHTML=h;
 }
 function tgSoft(){USE_SOFT=!USE_SOFT;save();render()}
+
+/* ------------------------------------------------------------- 履歴タブ */
+function sigListOf(t){return t.sigs==="end"?ENDSCR:(t.sigs==="mai"?MAIS:null)}
+
+function rLog(){
+ var t=TYPEM[lgT]||TYPES[0], h='<div class="pad">';
+ h+='<div class="sec"><div class="sec-h"><span class="t">この回を記録する</span>'
+  +'<span class="ar">何Gで何が起きたか</span></div><div class="sec-b">';
+ // ★ 入力はG数から。実戦では「何Gで起きたか」を先に押さえないと、
+ //   種別を選んでいる間にG数を忘れる（＝あとで間隔が出せなくなる）。
+ h+='<div class="lgg"><label>① ゲーム数</label>'
+  +'<input class="gin lg" type="number" inputmode="numeric" value="'+esc(lgG)+'" '
+  +'oninput="lgG=this.value" placeholder="0">'
+  +'<button class="btn" onclick="lgNow()">総G('+(G||0)+')</button></div>';
+ h+='<div class="lgl">② 何が起きたか</div>';
+ h+='<div class="chips">'+TYPES.map(function(x){
+   return '<button class="chip'+(lgT===x.k?" s":"")+'" onclick="lgPick(\''+x.k+'\')">'
+    +x.ic+' '+esc(x.l)+'</button>'}).join("")+'</div>';
+ var opts=t.opts;
+ if(opts){h+='<div class="rowg"><label>契機</label><div class="chips">'
+   +opts.map(function(o){return '<button class="chip'+(lgO===o.l?" s":"")+'" '
+     +'onclick="lgOpt(\''+o.l+'\')">'+esc(o.l)+'</button>'}).join("")+'</div></div>';}
+ var sl=sigListOf(t);
+ if(sl){h+='<div class="rowg"><label>種類</label><div class="chips">'
+   +sl.map(function(x){return '<button class="chip'+(lgSg===x.k?" s":"")+'" '
+     +'onclick="lgSig(\''+x.k+'\')">'+esc(x.l)+'<small>'+esc(x.h||x.s||"")+'</small></button>'}).join("")
+   +'</div></div>';}
+ if(t.res){h+='<div class="rowg"><label>結果</label><div class="chips">'
+   +t.res.map(function(r){return '<button class="chip'+(lgR===r?" s":"")+'" '
+     +'onclick="lgRes(\''+r+'\')">'+esc(r)+'</button>'}).join("")+'</div></div>';}
+ h+='<div class="rowg"><input class="dt-f" value="'+esc(lgV)+'" oninput="lgV=this.value" '
+  +'placeholder="'+esc(t.free||"メモ")+'"></div>';
+ h+='<button class="btn pri" style="width:100%;padding:13px" onclick="lgAdd()">＋ 履歴に追加</button>';
+ var bumps=[];
+ if(t.cnt)bumps.push((itemOf(t.cnt)||{}).n||t.cnt);
+ if(opts)bumps.push("選んだ契機のカウンタ");
+ if(sl)bumps.push("選んだ種類の示唆カウンタ");
+ if(t.resCnt)bumps.push("結果に応じたカウンタ");
+ h+='<div class="note" style="margin-top:7px">'
+  +(bumps.length?('追加すると <b>'+esc(bumps.join(" / "))+'</b> が+1されます（削除で戻ります）。'
+    +'「記録」「示唆」タブの数字は<b>履歴から入れた分も含んだ合計</b>です。'
+    +'同じ出来事を両方から入れると<b>二重に数えます</b>。'):
+    'この種別はカウンタに連動しません（解析が公開されていないので記録だけ残します）。')
+  +'</div>';
+ h+='</div></div>';
+ if(!LOG.length)h+='<div class="mt">まだ履歴がありません<br>'
+   +'「〇Gで青春ボーナス」を積むと当たり間のG数が見えます</div>';
+ else{
+  var rows=LOG.slice().sort(function(a,b){return (+a.g||0)-(+b.g||0)||a.at-b.at});
+  h+='<div class="sec"><div class="sec-h"><span class="t">履歴 '+rows.length+'件</span>'
+   +'<span class="ar">G順</span></div><div class="sec-b" style="padding:0 6px 8px">';
+  h+='<table class="tbl"><thead><tr><th style="width:52px">G</th>'
+   +'<th style="width:46px">同種<br>間隔</th><th>内容</th><th style="width:26px"></th></tr></thead><tbody>';
+  var prev={};
+  rows.forEach(function(e){
+   var ty=TYPEM[e.t]||{l:e.t,ic:"•"}, gap="";
+   // ★ 間隔は**種別ごとの別チェーン**。ボーナス間とCZ間を混ぜると天井管理に使えない数字になる
+   if(e.t==="at"||e.t==="cz"||e.t==="ao"){gap="+"+((+e.g||0)-(prev[e.t]||0));prev[e.t]=+e.g||0;}
+   var sg=e.sg&&SIGM[e.sg]?('<span class="ci-h">'+esc(SIGM[e.sg].h||SIGM[e.sg].s||"")+'</span>'):'';
+   var body=esc(ty.ic+" "+ty.l)+(e.o?("・"+esc(e.o)):"")+(e.r?("・"+esc(e.r)):"")
+    +(e.sg&&SIGM[e.sg]?("<br>"+esc(SIGM[e.sg].l)+sg):"")
+    +(e.v?('<div class="ci-s">'+esc(e.v)+'</div>'):'');
+   h+='<tr><td class="gm">'+(+e.g||0)+'</td>'
+    +'<td class="gm" style="color:rgba(255,255,255,.3)">'+gap+'</td><td>'+body+'</td>'
+    +'<td class="gm"><button class="btn dng" style="padding:4px 7px" onclick="lgDel('+e.at+')">×</button></td></tr>';});
+  h+='</tbody></table></div></div>';
+ }
+ h+='</div>';
+ document.getElementById("ct").innerHTML=h;
+}
+/* ★ 履歴の id。⚠️ Date.now() をそのまま使うと**同じミリ秒の連続追加で衝突**し、
+   削除したときに別のエントリが消えてカウンタが戻らない（2026-10-11 の実機テストで発覚）。
+   既存の id と重ならないところまでずらす。 */
+function newId(){var v=Date.now();
+ while(LOG.some(function(x){return x.at===v}))v++;
+ return v}
+function lgPick(k){lgT=k;lgR=null;lgO=null;lgSg=null;render()}
+function lgRes(r){lgR=(lgR===r?null:r);render()}
+function lgOpt(o){lgO=(lgO===o?null:o);render()}
+function lgSig(k){lgSg=(lgSg===k?null:k);render()}
+function lgNow(){lgG=String(G||0);render()}
+function lgAdd(){
+ var t=TYPEM[lgT];if(!t)return;
+ var g=parseInt(lgG);if(!(g>=0))g=G||0;
+ var e={g:g,t:lgT,v:(lgV||"").trim(),r:lgR,o:lgO,sg:lgSg,c:[],at:newId()};
+ function bump1(k){if(!k)return;CC[k]=(CC[k]||0)+1;e.c.push(k);TRACK[k]=true}
+ if(t.cnt)bump1(t.cnt);
+ if(t.opts&&lgO){var o=t.opts.filter(function(x){return x.l===lgO})[0];if(o)bump1(o.c)}
+ if(t.resCnt&&lgR&&t.resCnt[lgR])bump1(t.resCnt[lgR]);
+ if(t.sigs&&lgSg)bump1(lgSg);
+ LOG.push(e);
+ if(g>G)G=g;      /* 総Gが遅れていたら追いつかせる（率が壊れるのを防ぐ） */
+ lgV="";lgR=null;lgO=null;lgSg=null;lgG=String(g);
+ save();render();
+}
+function lgDel(at){
+ var i=-1;for(var j=0;j<LOG.length;j++)if(LOG[j].at===at){i=j;break}
+ if(i<0)return;
+ (LOG[i].c||[]).forEach(function(k){CC[k]=Math.max(0,(CC[k]||0)-1)});
+ LOG.splice(i,1);save();render();
+}
 
 /* ------------------------------------------------------------- 解説タブ */
 function tbl(title,rates,unit,note){
@@ -570,6 +747,14 @@ function buildText(){
   if(E.reasons.length)L.push("  根拠: "+E.reasons.join(" / "));
   L.push("  ※設定1は推定に含めていません（解析値が未公開・下パネルで判断）");
  }
+ if(LOG.length){L.push("");L.push("[履歴]（G順）");
+  var rows=LOG.slice().sort(function(a,b){return (+a.g||0)-(+b.g||0)||a.at-b.at}),prev={};
+  rows.forEach(function(e){var ty=TYPEM[e.t]||{l:e.t},gap="";
+   if(e.t==="at"||e.t==="cz"||e.t==="ao"){gap=" [間隔+"+((+e.g||0)-(prev[e.t]||0))+"]";prev[e.t]=+e.g||0;}
+   L.push("  "+String(+e.g||0).padStart(5)+"G"+gap+"  "+ty.l
+    +(e.o?("・"+e.o):"")+(e.r?("・"+e.r):"")
+    +(e.sg&&SIGM[e.sg]?("  "+SIGM[e.sg].l+"("+(SIGM[e.sg].h||SIGM[e.sg].s||"")+")"):"")
+    +(e.v?("  // "+e.v):""));});}
  if(MEMO){L.push("");L.push("[メモ]");L.push("  "+MEMO.replace(/\n/g,"\n  "))}
  return L.join("\n");
 }
